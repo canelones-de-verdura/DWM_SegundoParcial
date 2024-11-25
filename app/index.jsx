@@ -1,64 +1,66 @@
-import { StyleSheet, Text, View, FlatList, Platform, Dimensions, Pressable, ActivityIndicator } from "react-native";
+import { Text, View, FlatList, Platform, Pressable, ActivityIndicator } from "react-native";
 import ApiService from "../services/ApiService";
 import { useEffect, useState } from "react";
 import PicComponent from "../components/pic";
 import { useRouter } from "expo-router";
 import { MyModal } from "../components/addModal";
-import { BaseButton } from "../components/buttons/ButtonComponent";
+import { BaseButton, TextButton } from "../components/buttons/ButtonComponent";
 import { useIsFocused } from "@react-navigation/native";
+
+import { styles } from "../components/styles/index_styles";
 
 export default function Index() {
     const router = useRouter();
     const focused = useIsFocused();
-    const [planets, setPlanets] = useState(null);
+    const [teams, setTeams] = useState(null);
     const [sorted, setSorted] = useState(false);
     const [open, setOpen] = useState(false);
     const [update, setUpdate] = useState(false);
 
-    const getPlanets = async () => {
+    const getTeams = async () => {
         const res = await ApiService.get(null);
 
         if (res.code === 200)
-            setPlanets(res.data);
+            setTeams(res.data);
     };
 
-    const goToPlanetDetails = (planet) => {
+    const goToTeamDetails = (team) => {
         router.push({
-            pathname: "/planet",
+            pathname: "/team",
             params: {
-                planetid: planet.id,
+                teamid: team.id,
             }
         });
     };
 
-    const orderPlanets = () => {
+    const orderTeams = () => {
         if (!sorted) {
-            const sortedPlanets = [...planets].sort((a, b) => b.moons - a.moons);
-            setPlanets(sortedPlanets);
+            const sortedPlanets = [...teams].sort((a, b) => b.points - a.points);
+            setTeams(sortedPlanets);
         } else {
-            setUpdate(!update)
+            setUpdate(!update);
         }
-        setSorted(!sorted)
+        setSorted(!sorted);
     };
 
-    const renderPlanetCard = (item) => {
+    const renderTeamCard = (item) => {
         const planet = item.item;
 
         return (
-            <Pressable onPress={() => goToPlanetDetails(planet)}>
-                <View style={styles.PlanetCard}>
-                    <PicComponent size={100} image={planet.image} />
-                    <Text style={styles.PlanetName}>{planet.name}</Text>
+            <Pressable onPress={() => goToTeamDetails(planet)}>
+                <View style={styles.TeamCard}>
+                    <PicComponent size={100} image={planet.logo} />
+                    <Text style={styles.TeamName}>{planet.name}</Text>
                 </View>
             </Pressable>
         );
     };
 
     useEffect(() => {
-        getPlanets();
+        getTeams();
     }, [update, focused]);
 
-    if (!planets)
+    if (!teams)
         return (
             <View style={styles.Outer}>
                 <View style={styles.MainView}>
@@ -77,116 +79,51 @@ export default function Index() {
                     setUpdate={setUpdate}
                     planet={null}
                 />
-                {planets.length > 0 ?
+                {teams.length > 0 ?
                     <FlatList
-                        data={planets}
-                        renderItem={renderPlanetCard}
+                        data={teams}
+                        renderItem={renderTeamCard}
                         keyExtractor={item => item.id}
                         numColumns={1}
-                        contentContainerStyle={styles.PlanetList}
+                        contentContainerStyle={styles.TeamList}
                     /> :
-                    <Text style={styles.TextError}>No planets yet.</Text>
+                    <Text style={styles.TextError}>No teams yet.</Text>
                 }
 
-                <BaseButton
-                    icon={"add"}
-                    size={60}
-                    color={"white"}
+                <TextButton
+                    text={
+                        Platform.OS === "ios" ?
+                            "Crear equipo" :
+                            "Nuevo equipo"
+                    }
+                    color={
+                        Platform.OS === "ios" ?
+                            "black" :
+                            "white"
+                    }
+                    size={16}
+                    style={Platform.OS === "ios" ?
+                        styles.ButtonIOS :
+                        styles.ButtonAndroid
+                    }
                     execute={() => setOpen(true)}
-                    style={Platform.OS === "ios" ? styles.ButtonIOS : styles.ButtonAndroid}
                 />
 
                 <BaseButton
                     icon={"filter"}
                     size={60}
-                    color={"white"}
-                    execute={orderPlanets}
-                    style={styles.SortButton}
+                    color={
+                        Platform.OS === "ios" ?
+                            "black" :
+                            "white"
+                    }
+                    execute={orderTeams}
+                    style={Platform.OS === "ios" ?
+                        styles.SortButtonIOS :
+                        styles.SortButtonAndroid
+                    }
                 />
             </View>
         </View>
     );
 };
-
-const window = Dimensions.get("window");
-
-const styles = StyleSheet.create({
-    Outer: {
-        flex: 1,
-        justifyContent: "center",
-        alignItems: "center",
-    },
-
-    MainView: {
-        flex: 1,
-        width: window.width,
-        height: window.height,
-
-        justifyContent: "center",
-        alignItems: "center",
-    },
-
-    TextTitle: {
-        fontWeight: "bold",
-        fontSize: 32,
-        padding: 10,
-    },
-
-    TextError: {
-        fontWeight: "bold",
-        color: "grey",
-    },
-
-    PlanetList: {
-        width: window.width * .85,
-        paddingBottom: 30,
-    },
-
-    PlanetCard: {
-        flex: 1,
-        flexDirection: "row",
-        alignItems: "center",
-
-        marginTop: 10,
-        marginBottom: 10,
-        padding: 10,
-
-        backgroundColor: "white",
-
-        borderWidth: 1,
-        borderRadius: 20,
-        borderColor: "black",
-    },
-
-    PlanetName: {
-        marginLeft: 20,
-        fontWeight: "bold",
-    },
-
-    ButtonAndroid: {
-        backgroundColor: "lightblue",
-        borderRadius: 60,
-
-        position: "absolute",
-        bottom: 20,
-        right: 20,
-    },
-
-    ButtonIOS: {
-        backgroundColor: "lightgreen",
-        borderRadius: 60,
-
-        position: "absolute",
-        bottom: 20,
-        right: 20,
-    },
-
-    SortButton: {
-        backgroundColor: "lightblue",
-        borderRadius: 60,
-
-        position: "absolute",
-        bottom: 100,
-        right: 20,
-    },
-})

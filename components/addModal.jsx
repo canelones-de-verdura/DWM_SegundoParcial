@@ -1,38 +1,41 @@
 import { useState } from "react";
-import { Modal, StyleSheet, View, Text, Pressable, Alert } from "react-native"
+import { Modal, View, Text, Pressable, Alert } from "react-native"
 import { InputComponent } from "./input/InputComponent";
 import ApiService from "../services/ApiService";
 
-export function MyModal({ open, setOpen, update, setUpdate, planet }) {
-    const [name, setName] = useState(planet ? planet.name : "");
-    const [description, setDescription] = useState(planet ? planet.description : "");
-    const [image, setImage] = useState(planet ? planet.image : "");
-    const [moons, setMoons] = useState(planet ? planet.moons : "");
-    const [moon_names, setMoonNames] = useState(planet ? planet.moon_names : "");
+import { styles } from "./styles/modal_styles";
+
+export function MyModal({ open, setOpen, update, setUpdate, team }) {
+    const [name, setName] = useState(team ? team.name : "");
+    const [description, setDescription] = useState(team ? team.description : "");
+    const [image, setImage] = useState(team ? team.logo : "");
+    const [goals, setGoals] = useState(team ? team.goals : "");
+    const [points, setPoints] = useState(team ? team.points : "");
 
 
     const confirm = async () => {
         let res;
-        const newplanet = {
+        const newteam = {
             name: name,
             description: description,
-            image: image,
-            moons: moons,
-            moon_names: moon_names,
+            logo: image,
+            goals: goals,
+            points: points
         };
 
-        if (planet)
+        if (team)
             res = await ApiService.put(
-                planet.id,
-                newplanet
+                team.id,
+                newteam
             );
         else if (
             name !== "" &&
             description !== "" &&
             image !== "" &&
-            moons !== ""
+            goals !== "" &&
+            points !== ""
         )
-            res = await ApiService.post(newplanet);
+            res = await ApiService.post(newteam);
         else
             Alert.alert("Error", "Empty fields");
 
@@ -41,10 +44,9 @@ export function MyModal({ open, setOpen, update, setUpdate, planet }) {
             setOpen(false);
         } else {
             setOpen(false);
-            Alert.alert("Error", "Error adding or editing planet");
+            Alert.alert("Error", "Error adding or editing team");
         }
     };
-
 
     return (
         <Modal
@@ -56,7 +58,7 @@ export function MyModal({ open, setOpen, update, setUpdate, planet }) {
             <View style={styles.CenteredView}>
                 <View style={styles.ModalView}>
                     <Text style={{ fontWeight: "bold", fontSize: 18, paddingBottom: 20 }}>
-                        {planet ? "Edit planet" : "Add planet"}
+                        {team ? "Edit team" : "Add team"}
                     </Text>
 
                     <InputComponent updateInput={setName} />
@@ -74,64 +76,21 @@ export function MyModal({ open, setOpen, update, setUpdate, planet }) {
                         Description
                     </Text>
 
-                    <InputComponent updateInput={setMoons} />
+                    <InputComponent updateInput={setGoals} />
                     <Text style={styles.Label}>
-                        Moons amount
+                        Goals
                     </Text>
 
-                    <InputComponent updateInput={setMoonNames} />
+                    <InputComponent updateInput={setPoints} />
                     <Text style={styles.Label}>
-                        Moons
+                        Points
                     </Text>
 
                     <Pressable onPress={confirm}>
-                        <Text style={styles.Button}>Confirm changes</Text>
+                        <Text style={styles.Button}>Confirm</Text>
                     </Pressable>
                 </View>
             </View>
         </Modal>
     );
 }
-
-const styles = StyleSheet.create({
-    CenteredView: {
-        flex: 1,
-        justifyContent: 'center',
-        alignItems: 'center',
-    },
-
-    ModalView: {
-        width: "90%",
-        maxWidth: "90%",
-        margin: 20,
-        backgroundColor: 'white',
-        borderWidth: 1,
-        borderRadius: 20,
-        borderColor: "black",
-        padding: 35,
-        alignItems: 'center',
-        shadowColor: '#000',
-        shadowOffset: {
-            width: 0,
-            height: 2,
-        },
-        shadowOpacity: 0.25,
-        shadowRadius: 4,
-        elevation: 5,
-    },
-
-    Label: {
-        fontWeight: "normal",
-        fontSize: 10,
-        alignSelf: "flex-start",
-        marginLeft: 10,
-        marginBottom: 20,
-    },
-
-    Button: {
-        fontWeight: "bold",
-        marginTop: 20,
-        color: "red",
-    }
-});
-
