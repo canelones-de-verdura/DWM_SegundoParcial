@@ -1,4 +1,5 @@
 import { StyleSheet } from "react-native";
+import { window } from "./window";
 
 export const styles = StyleSheet.create({
     CenteredView: {
@@ -8,8 +9,8 @@ export const styles = StyleSheet.create({
     },
 
     ModalView: {
-        width: "85%",
-        maxWidth: "85%",
+        width: window.width * .85,
+        maxWidth: window.width * .85,
         margin: 20,
         backgroundColor: 'white',
         borderWidth: 1,
